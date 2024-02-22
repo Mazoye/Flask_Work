@@ -1,12 +1,12 @@
-from flask import Blueprint, Response, g, render_template, request
+from flask import Blueprint, render_template, request, jsonify
+import requests
+import json
 
-from app.src.helpers import validations
-from app.src.models.compute import Compute
-
+from app.src.helpers import validations, config
 
 # Define the blueprint:
 math = Blueprint('math', __name__)
-
+precompute_service_url = config.PRECOMPUTE_SERVICE
 
 # Set the route and accepted methods
 @math.route('/')
@@ -25,7 +25,12 @@ def fib_n():
     if not validations.validate_int(n):
         # in case of invalid input, return HTTP response code for Bad Request
         return "Please enter a valid input!", 400
-    return str(Compute.fibonacci(int(n)))
+    
+    # call service 2
+    fib_url = precompute_service_url + '/fib' 
+    param = {'fib_n': str(n)}
+    response = requests.post(url=fib_url, params=param)
+    return json.loads(response.text)
 
 
 def ack_mn():
